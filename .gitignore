@@ -7,4 +7,4 @@
 /.out
 /.build
 /vcpkg
-/settings.json
+settings.json

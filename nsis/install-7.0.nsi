@@ -78,10 +78,6 @@
   !define KICAD_VERSION "unknown"
 !endif
 
-!ifndef VCRUNTIME_MINIMUM_BLD
-  !define VCRUNTIME_MINIMUM_BLD 32532
-!endif
-
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME} ${KICAD_VERSION}"
 !define UNINST_ROOT "SHCTX"
 
@@ -323,6 +319,7 @@ FunctionEnd
 
 !ifdef MSVC
 Section -Prerequisites
+  !define VCRUNTIME_MINIMUM_BLD 32532 
   !if ${ARCH} == 'x86_64'
     ReadRegDword $R1 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Installed"
     ReadRegDword $R2 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Bld"
@@ -355,12 +352,12 @@ SectionEnd
 Section $(TITLE_SEC_MAIN) SEC01
   SectionIn RO
   SetOverwrite try
-
+  
   !insertmacro ExclusiveDetailPrint $(INSTALLING_APPS)
   ; delete contents of \bin\ itself to avoid any weird conflicts between versions
   ; not a foolproof solution for all conflicts that could occur
   Delete "$INSTDIR\bin\*.*"
-
+  
   ; clean contents of python because otherwise out of date things can remain and get loaded
   RMDir /r "$INSTDIR\bin\DLLs\"
   RMDir /r "$INSTDIR\bin\Lib\"
@@ -381,7 +378,7 @@ Section $(TITLE_SEC_MAIN) SEC01
 
   SetOutPath "$INSTDIR\lib"
   File /r "..\lib\*"
-
+  
   SetOutPath "$INSTDIR\etc"
   File /r "..\etc\*"
 
@@ -393,7 +390,7 @@ Section $(TITLE_SEC_MAIN) SEC01
 
   SetOutPath "$INSTDIR\share\kicad\template"
   File /nonfatal /r "..\share\kicad\template\*"
-
+  
   SetOutPath "$INSTDIR\share\kicad\resources"
   File /nonfatal /r "..\share\kicad\resources\*"
 
@@ -444,7 +441,7 @@ SectionGroup /e $(TITLE_SEC_LIBRARIES) SEC03
     !insertmacro ExclusiveDetailPrint $(INSTALLING_SCH_LIBS)
     SetOutPath "$INSTDIR\share\kicad\symbols"
     File /nonfatal /r "..\share\kicad\symbols\*"
-
+  
     !insertmacro RecursiveReadOnlyFlagFiles "$INSTDIR\share\kicad\symbols\"
   SectionEnd
   !else
@@ -480,7 +477,7 @@ SectionGroup /e $(TITLE_SEC_LIBRARIES) SEC03
     !insertmacro ExclusiveDetailPrint $(INSTALLING_3D_MODELS)
     SetOutPath "$INSTDIR\share\kicad\3dmodels"
     File /nonfatal /r "..\share\kicad\3dmodels\*"
-
+    
     !insertmacro RecursiveReadOnlyFlagFiles "$INSTDIR\share\kicad\3dmodels\"
   SectionEnd
   !else
@@ -577,6 +574,7 @@ Section -CreateShortcuts
 
   RMDir /r "${SMPATH}"
   CreateDirectory "${SMPATH}"
+  CreateShortCut "${SMPATH}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
   CreateShortCut "${SMPATH}\KiCad ${KICAD_VERSION}.lnk" "$INSTDIR\bin\kicad.exe"
   CreateShortCut "${SMPATH}\Schematic Editor ${KICAD_VERSION}.lnk" "$INSTDIR\bin\eeschema.exe"
   CreateShortCut "${SMPATH}\PCB Editor ${KICAD_VERSION}.lnk" "$INSTDIR\bin\pcbnew.exe"
@@ -627,7 +625,7 @@ Var RunningAsShellUser ; uninstaller restarted itself under the user of the runn
 
 Function un.onInit
 	${GetParameters} $R0
-
+  
 	${GetOptions} $R0 "/uninstall" $R1
 	${ifnot} ${errors}
 		StrCpy $RunningFromInstaller 1
@@ -709,7 +707,7 @@ Section Uninstall
   RMDir /r "$INSTDIR\ssl"
   RMDir /r "$INSTDIR\fonts"
   RMDir /r "$INSTDIR\etc"
-
+  
   !insertmacro ExclusiveDetailPrint $(REMOVING_LIBRARIES)
   RMDir /r "$INSTDIR\share\symbols"
   RMDir /r "$INSTDIR\share\footprints"
@@ -717,7 +715,7 @@ Section Uninstall
   RMDir /r "$INSTDIR\share\kicad\template"
   RMDir /r "$INSTDIR\share\kicad\internat"
   RMDir /r "$INSTDIR\share\kicad\demos"
-
+  
   !insertmacro ExclusiveDetailPrint $(REMOVING_DOCS)
   RMDir /r "$INSTDIR\share\doc\kicad\tutorials"
   RMDir /r "$INSTDIR\share\doc\kicad\help"
@@ -751,7 +749,7 @@ Section Uninstall
   ;and access to other people's registry entries. So for now we will leave the application registry keys.
 
   ;remove installation registary keys
-  !insertmacro MULTIUSER_RegistryRemoveInstallInfo ; Remove registry keys
+  !insertmacro MULTIUSER_RegistryRemoveInstallInfo ; Remove registry keys	
   SetAutoClose true
 SectionEnd
 
